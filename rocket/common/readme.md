@@ -17,3 +17,10 @@ MsgNo rpc消息
 线程进程号
 日期以及时间精确到ms
 自定义的字符串
+
+日志的打印格式：
+[%y-%m-%d %H:%M:%s.%ms]\t[pid:thread_id]\t[file_name:line][%msg]
+
+Logger 日志器
+1.提供打印日志的方法
+2。提供日志的输出路径

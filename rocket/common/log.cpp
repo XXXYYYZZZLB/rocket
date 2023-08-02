@@ -1,5 +1,7 @@
 #include "rocket/common/log.h"
 #include "rocket/common/util.h"
+#include "rocket/common/config.h"
+#include "rocket/common/mutex.h"
 #include <sys/time.h>
 #include <sstream>
 #include <stdio.h>
@@ -10,12 +12,13 @@ namespace rocket
 
     Logger *Logger::GetGlobalLogger()
     {
-        if (g_logger)
-        {
-            return g_logger;
-        }
-        g_logger = new Logger();
         return g_logger;
+    }
+
+    void Logger::InitGlobalLogger()
+    {
+        LogLevel global_log_level = StringToLoglevel(Config::GetGlobalConfig()->m_log_level);
+        g_logger = new Logger(global_log_level);
     }
 
     std::string LogLevelToString(LogLevel level)
@@ -33,6 +36,26 @@ namespace rocket
         }
     }
 
+    LogLevel StringToLoglevel(const std::string log_level)
+    {
+        if (log_level == "DEBUG")
+        {
+            return LogLevel::Debug;
+        }
+        else if (log_level == "INFO")
+        {
+            return LogLevel::Info;
+        }
+        else if (log_level == "ERROR")
+        {
+            return LogLevel::Error;
+        }
+        else
+        {
+            return LogLevel::Unknow;
+        }
+    }
+
     std::string LogEvent::toString()
     {
         struct timeval now_time;
@@ -40,36 +63,42 @@ namespace rocket
         struct tm now_time_t;
         localtime_r(&(now_time.tv_sec), &now_time_t);
         char buf[128];
-        strftime(&buf[0], 128, "%y-%m-%d %H:%M:%s", &now_time_t);
+        strftime(&buf[0], 128, "%Y-%m-%d %H:%M:%S", &now_time_t);
         std::string time_str(buf);
 
-        int ms = now_time.tv_usec * 1000;
+        int ms = now_time.tv_usec / 1000;
         time_str = time_str + "." + std::to_string(ms);
 
         m_pid = getPid();
         m_thread_id = getThreadId();
 
         std::stringstream ss;
-        ss << "[" << LogLevelToString(m_level) << "]\t"
-           << "[" << time_str << "]\t"
-           << "[" << m_pid << ":" << m_thread_id << "]\t"
-           << "[" << std::string(__FILE__) << ":" << __LINE__ << "]\t";
+        ss << "[" << LogLevelToString(m_level) << "] "
+           << "[" << time_str << "] "
+           << "[" << m_pid << ":" << m_thread_id << "] ";
 
         return ss.str();
     }
 
     void Logger::pushLog(const std::string &msg)
     {
+        ScopeMutex<Mutex> lock(m_mutex);
         m_buffer.push(msg);
+        lock.unlock(); // 不解锁也没关系，这段执行完会析构掉
     }
 
     void Logger::log()
     {
-        while (!m_buffer.empty())
+        ScopeMutex<Mutex> lock(m_mutex);
+        std::queue<std::string> tmp = m_buffer;
+        m_buffer.swap(tmp);
+        lock.unlock(); // buffer最后是要被清空的
+
+        while (!tmp.empty())
         {
-            std::string msg = m_buffer.front();
-            m_buffer.pop();
-            printf(msg.c_str());
+            std::string msg = tmp.front();
+            tmp.pop();
+            printf(msg.c_str(), nullptr);
         }
     }
 }

@@ -20,6 +20,7 @@ namespace rocket
         } 
     }
 
+    //设置对应文件描述符的回调函数
     void FdEvent::listen(TriggerEvent event_type, std::function<void()> callback)
     {
         if (event_type == TriggerEvent::IN_EVENT)

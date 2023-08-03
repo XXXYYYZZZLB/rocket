@@ -18,6 +18,7 @@
     {                                                                                 \
         ERRORLOG("ADD_TO_EPOLL error! error info[%d], fd=%d", errno, event->getFd()); \
     }                                                                                 \
+    m_listen_fds.insert(event->getFd());                                              \
     DEBUGLOG("add eent success,fd[%d]", event->getFd());
 
 #define DELETE_TO_EPOLL()                                                                \
@@ -33,12 +34,13 @@
     {                                                                                    \
         ERRORLOG("DELETE_TO_EPOLL error! error info[%d], fd=%d", errno, event->getFd()); \
     }                                                                                    \
+    m_listen_fds.erase(event->getFd());                                                  \
     DEBUGLOG("add eent success,fd[%d]", event->getFd());
 
 namespace rocket
 {
 
-    static thread_local EventLoop *t_current_eevent = NULL;
+    static thread_local EventLoop *t_current_event = NULL; // 每个线程只能创建一个loop
     // 有且只有 thread_local 关键字修饰的变量具有线程（thread）周期
     // 这些变量在线程开始的时候被生成，在线程结束的时候被销毁，并且每一个线程都拥有一个独立的变量实例
     static int g_epoll_max_timeout = 10000;
@@ -46,12 +48,12 @@ namespace rocket
 
     EventLoop::EventLoop()
     {
-        if (t_current_eevent != NULL)
+        if (t_current_event != NULL)
         {
             ERRORLOG("failed to create event loop, this thread has created event loop\n");
             exit(0);
         }
-        m_thread_id = getThreadId();
+        m_thread_id = getThreadId(); // 记录IO线程
         m_epoll_fd = epoll_create(10);
         if (m_epoll_fd == -1)
         {
@@ -59,6 +61,7 @@ namespace rocket
             exit(0);
         }
 
+        // event fd 也就是事件fd类型 就是专门用于事件通知的文件描述符
         m_wakeup_fd = eventfd(0, EFD_NONBLOCK); // 非阻塞的
         if (m_wakeup_fd < 0)
         {
@@ -68,12 +71,28 @@ namespace rocket
 
         initWakeUpFdEvent();
         INFOLOG("succ create event loop in thread %d", m_thread_id);
-        t_current_eevent = this;
+        t_current_event = this;
     }
+
+    void EventLoop::initWakeUpFdEvent()
+    {
+        m_wakeup_fd_event = new WakeUpFdEvent(m_wakeup_fd);
+        m_wakeup_fd_event->listen(FdEvent::IN_EVENT, [=]()
+                                  {
+            char buf[8];
+            while (read(m_wakeup_fd,buf,8)!=-1 && errno != EAGAIN)
+            {
+            }
+            DEBUGLOG("read full bytes"); });
+
+        addEpollEvent(m_wakeup_fd_event); // 添加到epoll监听中
+    }
+
     EventLoop::~EventLoop()
     {
         close(m_epoll_fd);
-        if(m_wakeup_fd_event){
+        if (m_wakeup_fd_event)
+        {
             delete m_wakeup_fd_event;
             m_wakeup_fd_event = NULL;
         }
@@ -136,11 +155,11 @@ namespace rocket
 
     void EventLoop::addEpollEvent(FdEvent *event)
     {
-        if (isInLoopThread)
+        if (isInLoopThread) // 是IO线程
         {
             ADD_TO_EPOLL();
         }
-        else
+        else // 不是IO线程
         {
             auto cb = [=]()
             {
@@ -179,20 +198,6 @@ namespace rocket
         {
             wakeup();
         }
-    }
-
-    void EventLoop::initWakeUpFdEvent()
-    {
-        m_wakeup_fd_event = new WakeUpFdEvent(m_wakeup_fd);
-        m_wakeup_fd_event->listen(FdEvent::IN_EVENT, [=]()
-                                  {
-            char buf[8];
-            while (read(m_wakeup_fd,buf,8)!=-1 && errno != EAGAIN)
-            {
-            }
-            DEBUGLOG("read full bytes"); });
-
-        addEpollEvent(m_wakeup_fd_event);
     }
 
 }

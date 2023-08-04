@@ -19,7 +19,7 @@
         ERRORLOG("ADD_TO_EPOLL error! error info[%d], fd=%d", errno, event->getFd()); \
     }                                                                                 \
     m_listen_fds.insert(event->getFd());                                              \
-    DEBUGLOG("add eent success,fd[%d]", event->getFd());
+    DEBUGLOG("add event success,fd[%d]", event->getFd());
 
 #define DELETE_TO_EPOLL()                                                                \
     auto it = m_listen_fds.find(event->getFd());                                         \
@@ -35,7 +35,7 @@
         ERRORLOG("DELETE_TO_EPOLL error! error info[%d], fd=%d", errno, event->getFd()); \
     }                                                                                    \
     m_listen_fds.erase(event->getFd());                                                  \
-    DEBUGLOG("add eent success,fd[%d]", event->getFd());
+    DEBUGLOG("add event success,fd[%d]", event->getFd());
 
 namespace rocket
 {
@@ -84,7 +84,7 @@ namespace rocket
             {
             }
             DEBUGLOG("read full bytes"); });
-
+        DEBUGLOG("fd[%d] is m_wakeup_fd_event",m_wakeup_fd_event->getFd());
         addEpollEvent(m_wakeup_fd_event); // 添加到epoll监听中
     }
 
@@ -103,14 +103,18 @@ namespace rocket
         while (!m_stop_flag)
         {
             ScopeMutex<Mutex> lock(m_mutex);
-            std::queue<std::function<void()>> tmp_tasks = m_pending_tasks;
+            std::queue<std::function<void()>> tmp_tasks;
             m_pending_tasks.swap(tmp_tasks);
             lock.unlock();
 
             while (!tmp_tasks.empty()) // 执行队列所有的任务
             {
-                tmp_tasks.front()();
+                std::function<void()> cb = tmp_tasks.front();
                 tmp_tasks.pop();
+                if (cb)
+                { // cb函数不为空
+                    cb();
+                }
             }
 
             int timeout = g_epoll_max_timeout;
@@ -131,11 +135,11 @@ namespace rocket
                     {
                         continue;
                     }
-                    if (trigger_event.events | EPOLLIN)
+                    if (trigger_event.events & EPOLLIN)
                     {
                         addTask(fd_event->handler(FdEvent::IN_EVENT));
                     }
-                    if (trigger_event.events | EPOLLOUT)
+                    if (trigger_event.events & EPOLLOUT)
                     {
                         addTask(fd_event->handler(FdEvent::OUT_EVENT));
                     }
@@ -146,6 +150,7 @@ namespace rocket
 
     void EventLoop::wakeup()
     {
+        m_wakeup_fd_event->wakeup();
     }
 
     void EventLoop::stop()
@@ -155,7 +160,7 @@ namespace rocket
 
     void EventLoop::addEpollEvent(FdEvent *event)
     {
-        if (isInLoopThread) // 是IO线程
+        if (isInLoopThread()) // 是IO线程
         {
             ADD_TO_EPOLL();
         }

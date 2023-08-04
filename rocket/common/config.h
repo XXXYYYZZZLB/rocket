@@ -1,6 +1,8 @@
 #ifndef ROCKET_COMMON_CONFIG_H
 #define ROCKET_COMMON_CONFIG_H
 
+#include <string>
+
 namespace rocket
 {
     class Config

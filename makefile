@@ -36,14 +36,16 @@ NET_OBJ  := $(patsubst $(PATH_NET)/%.cpp, $(PATH_OBJ)/%.o, $(wildcard $(PATH_NET
 ##################################
 # 规则 没有命令 是为了生成多个目标
 ##################################
-ALL_TESTS : $(PATH_BIN)/test_log 
+ALL_TESTS : $(PATH_BIN)/test_log $(PATH_BIN)/test_eventloop 
 
 
-TEST_CASE_OUT := $(PATH_BIN)/test_log
+TEST_CASE_OUT := $(PATH_BIN)/test_log $(PATH_BIN)/test_eventloop
 LIB_OUT := $(PATH_LIB)/librocket.a
 
 $(PATH_BIN)/test_log: $(LIB_OUT) $(PATH_TESTCASES)/test_log.cpp
 	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_log.cpp -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread
+$(PATH_BIN)/test_eventloop: $(LIB_OUT) $(PATH_TESTCASES)/test_eventloop.cpp
+	$(CXX) $(CXXFLAGS) $(PATH_TESTCASES)/test_eventloop.cpp -o $@ $(LIB_OUT) $(LIBS) -ldl -pthread
 
 
 $(LIB_OUT): $(COMM_OBJ) $(NET_OBJ)

@@ -5,24 +5,10 @@
 namespace rocket
 {
     WakeUpFdEvent::WakeUpFdEvent(int fd) : FdEvent(fd) {
-        init();
     }
 
     WakeUpFdEvent::~WakeUpFdEvent()
     {
-    }
-
-    void WakeUpFdEvent::init()
-    {
-        m_read_callback = [=]()
-        {
-            char buf[8];
-            while (read(m_fd, buf, 8) != -1 && errno != EAGAIN)
-            {
-
-            }
-            DEBUGLOG("read full bytes");
-        };
     }
 
     void WakeUpFdEvent::wakeup()

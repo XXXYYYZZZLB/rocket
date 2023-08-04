@@ -90,7 +90,7 @@ namespace rocket
     void Logger::log()
     {
         ScopeMutex<Mutex> lock(m_mutex);
-        std::queue<std::string> tmp = m_buffer;
+        std::queue<std::string> tmp;
         m_buffer.swap(tmp);
         lock.unlock(); // buffer最后是要被清空的
 

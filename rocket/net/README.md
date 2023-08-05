@@ -52,6 +52,37 @@ loop：一直循环
 
 
 
-EventLoop流程
+
+---
+
+TimerEvent 定时任务
+在网络框架中，不只有执行回调函数，还有定时任务
+例如：调用请求，然后如果超过了5s没有返回，就返回一个错误，就需要一个定时器，判断这个任务5s有没有成功
+如果到了5s任务没完成，就应该报错
+我们有定时任务的需求
+
+定时任务需要哪些东西
+1. 指定的时间点 arrive_time
+2. 间隔时间 inerval,ms
+3. 是否是周期性任务 需要重复执行 is_repeaded
+4. 取消标志 is_cancled
+5. task
+
+cancle() 取消任务
+cancleRepeated() 取消周期执行 
+
+定时器Timer
+定时器 是一个TimerEvent的集合
+Timer 继承 FdEvent
+
+multimap 存储 TimerEvent< arrivetime, TimerEvent> 可重复的
+
+addTimerEvent();
+deleteTimerEvent();
+onTimer();//当发生 IO 事件之后，需要执行的方法
+
+reserArriveTimer()
+
+
 
 

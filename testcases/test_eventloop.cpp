@@ -4,11 +4,14 @@
 #include "rocket/net/fd_event.h"
 #include "rocket/net/wakeup_fd_event.h"
 #include "rocket/net/eventloop.h"
+#include "rocket/net/timer.h"
+#include "rocket/net/timer_event.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
+#include <memory>
 
 int main()
 {
@@ -57,9 +60,16 @@ int main()
                      socklen_t addr_len = sizeof(peer_addr);
                      int clientfd = accept(listenfd, reinterpret_cast<sockaddr *>(&peer_addr), &addr_len);
 
-                     DEBUGLOG("succsee get client[%s:%d]", inet_ntoa(peer_addr.sin_addr), ntohs(peer_addr.sin_port));
-                 }); // 监听可读事件
+                     DEBUGLOG("succsee get client[%s:%d]", inet_ntoa(peer_addr.sin_addr), ntohs(peer_addr.sin_port)); }); // 监听可读事件
     eventloop->addEpollEvent(&event);
+
+    int i = 0;
+    rocket::TimerEvent::s_ptr timer_event = std::make_shared<rocket::TimerEvent>(
+        1000, true, [&i]()
+        { INFOLOG("trgger timer event, i = %d", i++); });
+
+    eventloop->addTimerEvent(timer_event);
+
     eventloop->loop();
 
     return 0;

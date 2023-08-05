@@ -26,12 +26,3 @@ Logger 日志器
 2。提供日志的输出路径
 
 
-
-
-EventLoop模块
-Reactor是一种事件处理模型 反应堆模式
-他的核心是一个Loop循环，在循环里不断调用epoll_wait监听套接字IO事件
-一旦发送IO事件，epoll_wait返回，线程转而去处理这些IO事件
-（一般是执行绑定在其的回调函数）
-处理完事件以后，又重新陷入到epoll_wait中
-

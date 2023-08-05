@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/syscall.h>
+#include <sys/time.h>
 
 namespace rocket{
 
@@ -21,4 +22,11 @@ namespace rocket{
         }
         return syscall(SYS_gettid);
     }
+
+    int64_t getNowMs(){
+        timeval val;
+        gettimeofday(&val,NULL);
+        return val.tv_sec*1000 + val.tv_usec/1000;
+    }
+
 }

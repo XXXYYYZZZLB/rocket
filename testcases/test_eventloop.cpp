@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <memory>
+#include "rocket/net/io_thread_group.h"
 
 void test_io_thread()
 {
@@ -64,12 +65,29 @@ void test_io_thread()
         1000, true, [&i]()
         { INFOLOG("trgger 定时任务 event, i = %d", i++); });
 
-    rocket::IOThread io_thread;
-    io_thread.getEventLoop()->addEpollEvent(&event);
-    io_thread.getEventLoop()->addTimerEvent(timer_event);
-    io_thread.start();
+    int k = 100000;
+    rocket::TimerEvent::s_ptr timer_event1 = std::make_shared<rocket::TimerEvent>(
+        1000, true, [&k]()
+        { INFOLOG("!!!另外一个定时任务 event, i = %d", k--); });
 
-    io_thread.jion();
+    // rocket::IOThread io_thread;
+    // io_thread.getEventLoop()->addEpollEvent(&event);
+    // io_thread.getEventLoop()->addTimerEvent(timer_event);
+    // io_thread.start();
+
+    // io_thread.jion();
+
+    rocket::IOTHreadGroup io_thread_group(2);
+    rocket::IOThread *io_1 = io_thread_group.getIOThread();
+    io_1->getEventLoop()->addEpollEvent(&event);
+    io_1->getEventLoop()->addTimerEvent(timer_event);
+
+    rocket::IOThread *io_2 = io_thread_group.getIOThread();
+    // io_2->getEventLoop()->addTimerEvent(timer_event);
+    io_2->getEventLoop()->addTimerEvent(timer_event1);
+
+    io_thread_group.start();
+    io_thread_group.join();
 }
 
 int main()
@@ -80,8 +98,7 @@ int main()
 
     test_io_thread();
 
-
-    //rocket::EventLoop *eventloop = new rocket::EventLoop(); // 创建一个EventLoop循环
+    // rocket::EventLoop *eventloop = new rocket::EventLoop(); // 创建一个EventLoop循环
 
     // int listenfd = socket(AF_INET, SOCK_STREAM, 0);
     // if (listenfd == -1)

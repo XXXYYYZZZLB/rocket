@@ -17,7 +17,10 @@ namespace rocket
 
         FdEvent(int fd);
         ~FdEvent();
+        
+        //返回绑定类型的函数
         std::function<void()> handler(TriggerEvent event_type);
+        //根据类型绑定函数
         void listen(TriggerEvent event_type, std::function<void()> callback);
 
         int getFd() const

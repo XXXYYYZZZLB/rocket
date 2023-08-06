@@ -4,8 +4,9 @@
 
 namespace rocket
 {
-    FdEvent::FdEvent(int fd) : m_fd(fd) {
-        memset(&m_listen_events,0,sizeof(m_listen_events));
+    FdEvent::FdEvent(int fd) : m_fd(fd)
+    {
+        memset(&m_listen_events, 0, sizeof(m_listen_events));
     }
     FdEvent::~FdEvent()
     {
@@ -20,10 +21,9 @@ namespace rocket
         else
         {
             return m_write_callback;
-        } 
+        }
     }
-
-    //设置对应文件描述符的回调函数
+    
     void FdEvent::listen(TriggerEvent event_type, std::function<void()> callback)
     {
         if (event_type == TriggerEvent::IN_EVENT)
@@ -36,7 +36,7 @@ namespace rocket
             m_listen_events.events |= EPOLLOUT;
             m_write_callback = callback;
         }
-        m_listen_events.data.ptr = this; // ？？？
+        m_listen_events.data.ptr = this; // 保存FdEvent
     }
 
 }

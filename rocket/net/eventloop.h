@@ -30,6 +30,7 @@ namespace rocket
         bool isInLoopThread();
         void addTask(std::function<void()> cb, bool is_wake_up = false /*是否唤醒*/);
 
+        /* 定时器 */
         void addTimerEvent(TimerEvent::s_ptr event);
         void initTimer();
 

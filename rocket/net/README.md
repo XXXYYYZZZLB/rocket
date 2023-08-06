@@ -84,5 +84,18 @@ onTimer();//当发生 IO 事件之后，需要执行的方法
 reserArriveTimer()
 
 
+IO线程
+创建一个IO线程，他会帮我们执行
+1. 创建一个新线程
+2. 在新线程里 创建一个EventLoop,完成初始化
+3. loop循环
+
+class{
+    pthread_t m_thread; //线程指针
+    pid_t m_thread_id;  //线程id
+    Eventloop eventloop;
+}
+
+
 
 

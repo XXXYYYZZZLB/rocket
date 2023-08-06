@@ -68,9 +68,11 @@ namespace rocket
             ERRORLOG("eventfd error! error info[%d]", errno);
             exit(0);
         }
+        DEBUGLOG("创建事件fd m_wakeup_fd,用于wakeup ：%d",m_wakeup_fd);
 
         initWakeUpFdEvent();
         initTimer();
+        INFOLOG("成功创建了 event loop , 线程号: %d", m_thread_id);
         INFOLOG("succ create event loop in thread %d", m_thread_id);
         t_current_event = this;
     }
@@ -78,6 +80,7 @@ namespace rocket
     void EventLoop::initWakeUpFdEvent()
     {
         m_wakeup_fd_event = new WakeUpFdEvent(m_wakeup_fd);
+        //给wakeupfd绑定函数，当触发了以后就读出来，因为那边的触发的是写入字节
         m_wakeup_fd_event->listen(FdEvent::IN_EVENT, [=]()
                                   {
             char buf[8];
@@ -85,7 +88,6 @@ namespace rocket
             {
             }
             DEBUGLOG("read full bytes"); });
-        DEBUGLOG("fd[%d] is m_wakeup_fd_event", m_wakeup_fd_event->getFd());
         addEpollEvent(m_wakeup_fd_event); // 添加到epoll监听中
     }
 
@@ -176,6 +178,7 @@ namespace rocket
         }
         else // 不是IO线程
         {
+            DEBUGLOG("!!!不是IO线程addEpollEvent");
             auto cb = [=]()
             {
                 ADD_TO_EPOLL();

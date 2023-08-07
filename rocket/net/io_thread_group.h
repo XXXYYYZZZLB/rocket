@@ -5,6 +5,7 @@
 #include <vector>
 #include "rocket/common/log.h"
 #include "rocket/net/io_thread.h"
+#include <memory>
 
 namespace rocket
 {
@@ -12,6 +13,7 @@ namespace rocket
     {
 
     public:
+    typedef std::shared_ptr<IOThreadGroup> s_ptr;
         IOThreadGroup(int size);
         ~IOThreadGroup();
 

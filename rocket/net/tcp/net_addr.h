@@ -20,12 +20,12 @@ namespace rocket
         virtual bool checkValid() = 0;
     };
 
-    class IPNetaddr : public NetAddr
+    class IPNetAddr : public NetAddr
     {
     public:
-        IPNetaddr(const std::string &ip, uint16_t port);
-        IPNetaddr(const std::string &addr); // 点分十进制
-        IPNetaddr(sockaddr_in addr);        // 点分十进制
+        IPNetAddr(const std::string &ip, uint16_t port);
+        IPNetAddr(const std::string &addr); // 点分十进制
+        IPNetAddr(sockaddr_in addr);        // 点分十进制
 
         sockaddr *getSockAddr();
         socklen_t getSockLen();

@@ -16,7 +16,7 @@ namespace rocket
         size_t i = addr.find_first_of(":");
         if (i == addr.npos)
         {
-            ERRORLOG("IPNetaddr::IPNetaddr(const std::string &addr),addr输入有误");
+            ERRORLOG("IPNetAddr::IPNetAddr(const std::string &addr),addr输入有误");
             return;
         }
         m_ip = addr.substr(0, i);

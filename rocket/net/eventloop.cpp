@@ -68,7 +68,7 @@ namespace rocket
             ERRORLOG("eventfd error! error info[%d]", errno);
             exit(0);
         }
-        DEBUGLOG("创建事件fd m_wakeup_fd,用于wakeup ：%d",m_wakeup_fd);
+        DEBUGLOG("创建事件fd m_wakeup_fd,用于wakeup ：%d", m_wakeup_fd);
 
         initWakeUpFdEvent();
         initTimer();
@@ -80,7 +80,7 @@ namespace rocket
     void EventLoop::initWakeUpFdEvent()
     {
         m_wakeup_fd_event = new WakeUpFdEvent(m_wakeup_fd);
-        //给wakeupfd绑定函数，当触发了以后就读出来，因为那边的触发的是写入字节
+        // 给wakeupfd绑定函数，当触发了以后就读出来，因为那边的触发的是写入字节
         m_wakeup_fd_event->listen(FdEvent::IN_EVENT, [=]()
                                   {
             char buf[8];
@@ -99,7 +99,8 @@ namespace rocket
             delete m_wakeup_fd_event;
             m_wakeup_fd_event = NULL;
         }
-        if(m_timer){
+        if (m_timer)
+        {
             delete m_timer;
             m_timer = NULL;
         }
@@ -227,6 +228,16 @@ namespace rocket
     void EventLoop::addTimerEvent(TimerEvent::s_ptr event)
     {
         m_timer->addTimerEvent(event);
+    }
+
+    EventLoop *EventLoop::GetCurrentEventLoop()
+    {
+        if (t_current_event)
+        {
+            return t_current_event;
+        }
+        t_current_event = new EventLoop();
+        return t_current_event;
     }
 
 }

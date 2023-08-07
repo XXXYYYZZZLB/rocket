@@ -11,12 +11,14 @@
 #include "rocket/net/wakeup_fd_event.h"
 #include "rocket/net/timer.h"
 #include "rocket/net/timer_event.h"
+#include <memory>
 
 namespace rocket
 {
     class EventLoop
     {
     public:
+    typedef std::shared_ptr<EventLoop> s_ptr;
         EventLoop();
         ~EventLoop();
 
@@ -33,6 +35,9 @@ namespace rocket
         /* 定时器 */
         void addTimerEvent(TimerEvent::s_ptr event);
         void initTimer();
+
+    public:
+        static EventLoop* GetCurrentEventLoop();
 
     private:
         void dealWakeup();

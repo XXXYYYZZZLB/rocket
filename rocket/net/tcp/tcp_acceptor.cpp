@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <sys/socket.h>
 #include <string.h>
+#include <stdio.h>
 
 namespace rocket
 {
@@ -37,6 +38,7 @@ namespace rocket
         if (bind(m_listenfd, m_local_addr->getSockAddr(), len) != 0)
         {
             ERRORLOG("bind 错误");
+            exit(0);
         }
 
         if (listen(m_listenfd, 1000) != 0)
@@ -48,6 +50,7 @@ namespace rocket
 
     int TcpAcceptor::accept()
     {
+        printf("accept()\n");
         if (m_family == AF_INET)
         {
             sockaddr_in client_addr;
@@ -60,7 +63,7 @@ namespace rocket
                 ERRORLOG("::accept 错误");
             }
             IPNetAddr peer_addr(client_addr);
-            INFOLOG("A client have accepted succ! [%s]", peer_addr.toString());
+            INFOLOG("!!!有连接A client have accepted succ! [%s]", peer_addr.toString().c_str());
             return client_fd;
         }
         else
@@ -71,6 +74,11 @@ namespace rocket
 
     TcpAcceptor::~TcpAcceptor()
     {
+    }
+
+    int TcpAcceptor::getListenFd()
+    {
+        return m_listenfd;
     }
 
 }

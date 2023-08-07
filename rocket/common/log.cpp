@@ -93,6 +93,7 @@ namespace rocket
         std::queue<std::string> tmp;
         m_buffer.swap(tmp);
         lock.unlock(); // buffer最后是要被清空的
+        //lock.unlock(); // buffer最后是要被清空的
 
         while (!tmp.empty())
         {
@@ -101,4 +102,5 @@ namespace rocket
             printf(msg.c_str(), nullptr);
         }
     }
+    
 }

@@ -86,7 +86,6 @@ namespace rocket
         {
             ERRORLOG("timerfd_settime");
         }
-        DEBUGLOG("timer reset to %lld", now + interval);
     }
 
     void Timer::deleteTimerEvent(TimerEvent::s_ptr event)
@@ -118,8 +117,11 @@ namespace rocket
         char buf[8];
         while (1)
         {
+            //感觉着没有也可以，只是触发了可读事件，并没有写入数据
             if ((read(m_fd, buf, 8) == -1) && errno == EAGAIN)
             {
+                //DEBUGLOG("void Timer::onTimer() 处理缓冲区数据，防止下一次继续触发可读事件 buf:%s",buf);
+                //DEBUGLOG("都读空了");
                 break;
             }
         }

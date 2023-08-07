@@ -59,6 +59,7 @@ namespace rocket
         {
             pthread_mutex_lock(&m_mutex);
         }
+        
         void unlock()
         {
             pthread_mutex_unlock(&m_mutex);

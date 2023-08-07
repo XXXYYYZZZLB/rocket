@@ -8,12 +8,12 @@
 
 namespace rocket
 {
-    class IOTHreadGroup
+    class IOThreadGroup
     {
 
     public:
-        IOTHreadGroup(int size);
-        ~IOTHreadGroup();
+        IOThreadGroup(int size);
+        ~IOThreadGroup();
 
         void start();
         void join();

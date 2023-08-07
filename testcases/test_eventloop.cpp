@@ -62,13 +62,16 @@ void test_io_thread()
 
     int i = 0;
     rocket::TimerEvent::s_ptr timer_event = std::make_shared<rocket::TimerEvent>(
-        1000, true, [&i]()
-        { INFOLOG("trgger 定时任务 event, i = %d", i++); });
+        10, true, [&i]()
+        { INFOLOG("trgger 定时任务 event, i = %d", i++);
+        printf("ing... [%d]\n",i++);
+         });
 
     int k = 100000;
     rocket::TimerEvent::s_ptr timer_event1 = std::make_shared<rocket::TimerEvent>(
-        1000, true, [&k]()
-        { INFOLOG("!!!另外一个定时任务 event, i = %d", k--); });
+        10, true, [&k]()
+        { INFOLOG("!!!另外一个定时任务 event, k = %d", k--);
+        printf("ing... [%d]\n",k--); });
 
     // rocket::IOThread io_thread;
     // io_thread.getEventLoop()->addEpollEvent(&event);
@@ -77,7 +80,7 @@ void test_io_thread()
 
     // io_thread.jion();
 
-    rocket::IOTHreadGroup io_thread_group(2);
+    rocket::IOThreadGroup io_thread_group(2);
     rocket::IOThread *io_1 = io_thread_group.getIOThread();
     io_1->getEventLoop()->addEpollEvent(&event);
     io_1->getEventLoop()->addTimerEvent(timer_event);

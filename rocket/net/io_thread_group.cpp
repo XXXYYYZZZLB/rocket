@@ -5,7 +5,7 @@
 
 namespace rocket
 {
-    IOTHreadGroup::IOTHreadGroup(int size) : m_size(size)
+    IOThreadGroup::IOThreadGroup(int size) : m_size(size)
     {
         m_io_thread_groups.resize(size);
         for (int i = 0; i < size; ++i)
@@ -14,11 +14,11 @@ namespace rocket
         }
     }
 
-    IOTHreadGroup::~IOTHreadGroup()
+    IOThreadGroup::~IOThreadGroup()
     {
     }
 
-    void IOTHreadGroup::start()
+    void IOThreadGroup::start()
     {
         for (int i = 0; i < m_io_thread_groups.size(); ++i)
         {
@@ -26,7 +26,7 @@ namespace rocket
         }
     }
 
-    IOThread *IOTHreadGroup::getIOThread()
+    IOThread *IOThreadGroup::getIOThread()
     {
         if (m_index == m_io_thread_groups.size() || m_index == -1)
         {
@@ -35,7 +35,7 @@ namespace rocket
         return m_io_thread_groups[m_index++];
     }
 
-    void IOTHreadGroup::join()
+    void IOThreadGroup::join()
     {
         for (int i = 0; i < m_io_thread_groups.size(); ++i)
         {

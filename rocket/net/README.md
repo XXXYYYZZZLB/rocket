@@ -99,3 +99,82 @@ class{
 
 
 
+
+# Main
+IOThreadGroup是一个IO线程数组
+主要成员变量为：
+    std::vector<IOThread *> m_io_thread_groups;
+
+
+IOThread是一个IO线程类
+主要成员变量为：
+    pthread_t m_thread{0};        // 线程句柄
+    EventLoop *m_event_loop{NULL}; // 当前io线程的loop对象
+主要功能为：
+    创建一个线程（将this指针传入），在新线程中创建IOThread对象
+    初始化EventLoop、设置m_thread_id
+    等待唤醒，开始loop循环
+
+
+EventLoop类
+主要成员变量为：
+    pid_t m_thread_id{0}; // 记录线程id
+    int m_epoll_fd{0};
+    int m_wakeup_fd{0};
+    WakeUpFdEvent *m_wakeup_fd_event{NULL};
+    bool m_stop_flag{false};
+    std::set< int> m_listen_fds;                         // 监听的套接字
+    std::queue< std::function< void()>> m_pending_tasks; // 所有待执行任务的队列
+    Mutex m_mutex;
+    Timer *m_timer{NULL};
+主要功能为：
+    EventLoop需要先创建对象 -> 然后添加监听addTimerEvent、void addEpollEvent -> 最后进入loop循环
+    1.EventLoop需要先创建对象：
+    先记录当前线程的id，EventLoop都是创建在非主线程中的
+    创建epoll文件监听描述符
+    创建m_wakeup_fd通知文件描述符(eventfd)
+    initWakeUpFdEvent() 及时响应事件
+        将m_wakeup_fd包装为WakeUpFdEvent(m_wakeup_fd_event)
+        使用listen设置 m_wakeup_fd的回调函数 read 8个字节(因为触发是write 8个字节)
+        addEpollEvent() 将m_wakeup_fd_event添加到epoll监听中
+        (判断是否是IO线程(根据m_thread_id)，是就直接添加，不是就添加到任务队列)
+    initTimer() 定时事件
+        m_timer = new Timer();
+        addEpollEvent(m_timer);
+    2.然后添加监听addTimerEvent、void addEpollEvent
+    3.最后进入loop循环
+    锁住m_pending_tasks，执行内置的所有任务
+    阻塞到epoll_wait,在上述任务触发之前会一直阻塞在这里
+    解除阻塞以后根据event添加任务，trigger_event.data.ptr保存了对象指针
+    然乎回到开头执行任务，阻塞...
+
+Timer类
+主要成员变量为：
+    int64_t m_arrive_time; // ms
+    int64_t m_interval;    // ms
+    bool m_is_repeated{false};
+    bool m_is_cancled{false};
+    std::function< void()> m_task;//定时的任务
+
+
+Timer类继承自FdEvent
+主要成员变量为：
+    std::multimap< int64_t, TimerEvent::s_ptr> m_pending_events;
+主要功能为：
+    1.timerfd_create创建m_fd,listen设置 m_fd的回调函数是onTimer();
+    2.addTimerEvent
+        m_pending_events中添加event
+    3.如果容器为空或新添加的事件的到达时间比当前最早的事件到达时间还早 就需要重新设置定时器的触发时间
+        更新时间，然后使用timerfd_settime来设置m_fd最小的间隔时间，因为m_fd是来触发epoll_wait的
+    关于onTimer
+        先处理缓冲区数据，防止下一次继续触发可读事件(可以不处理，其实没有写入)
+        执行定时任务，把重复的再重新存储进去
+
+
+    
+    
+    
+
+
+
+

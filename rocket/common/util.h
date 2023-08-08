@@ -4,13 +4,13 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-namespace rocket
-{
-    pid_t getPid();
-    pid_t getThreadId();
+namespace rocket {
 
-    //获取当前毫秒时间戳
-    int64_t getNowMs();
+pid_t getPid();
+
+pid_t getThreadId();
+
+int64_t getNowMs();
 
 }
 

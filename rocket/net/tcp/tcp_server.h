@@ -1,36 +1,48 @@
-#ifndef ROCK_NET_TCP_TCP_SERVER
-#define ROCK_NET_TCP_TCP_SERVER
+#ifndef ROCKET_NET_TCP_SERVER_H
+#define ROCKET_NET_TCP_SERVER_H
 
+#include <set>
 #include "rocket/net/tcp/tcp_acceptor.h"
+#include "rocket/net/tcp/tcp_connection.h"
 #include "rocket/net/tcp/net_addr.h"
+#include "rocket/net/eventloop.h"
 #include "rocket/net/io_thread_group.h"
 
-namespace rocket
-{
-    class TcpServer
-    {
-    public:
-        TcpServer(NetAddr::s_ptr local_addr);
-        ~TcpServer();
+namespace rocket {
 
-        void start();
-        void init();
-        // 当有新连接
-        void onAccept();
+class TcpServer {
+ public:
+  TcpServer(NetAddr::s_ptr local_addr);
 
-    private:
-        TcpAcceptor::s_ptr m_acceptor;
-        NetAddr::s_ptr m_local_addr; // 本地监听地址
+  ~TcpServer();
 
-        EventLoop *m_main_event_loop; // mainReactor
+  void start();
 
-        IOThreadGroup *m_io_thread_groups; // subReactor组
 
-        FdEvent *listen_fd_event{NULL};
+ private:
+  void init();
 
-        int m_client_count{0};
-    };
+  // 当有新客户端连接之后需要执行
+  void onAccept();
+
+ private:
+  TcpAcceptor::s_ptr m_acceptor;
+
+  NetAddr::s_ptr m_local_addr;    // 本地监听地址
+
+  EventLoop* m_main_event_loop {NULL};    // mainReactor
+  
+  IOThreadGroup* m_io_thread_group {NULL};   // subReactor 组
+
+  FdEvent* m_listen_fd_event;
+
+  int m_client_counts {0};
+
+  std::set<TcpConnection::s_ptr> m_client;
+
+};
 
 }
+
 
 #endif

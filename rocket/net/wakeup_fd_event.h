@@ -1,21 +1,23 @@
-#ifndef ROCKET_NET_WAKEUP_FD_EVENT_H
-#define ROCKET_NET_WAKEUP_FD_EVENT_H
+#ifndef ROCKET_NET_WAKEUP_FDEVENT_H
+#define ROCKET_NET_WAKEUP_FDEVENT_H
 
 #include "rocket/net/fd_event.h"
-#include <memory>
 
-namespace rocket
-{
-    class WakeUpFdEvent : public FdEvent
-    {
-    public:
-        WakeUpFdEvent(int fd);
-        ~WakeUpFdEvent();
+namespace rocket {
 
-        void wakeup();
+class WakeUpFdEvent : public FdEvent {
+ public:
+  WakeUpFdEvent(int fd);
 
-    private:
-    };
+  ~WakeUpFdEvent();
+
+  void wakeup();
+
+ private:
+
+};
+
+
 
 }
 

@@ -1,34 +1,37 @@
-#ifndef ROCKER_NET_IO_THREAD_GROUP_H
-#define ROCKER_NET_IO_THREAD_GROUP_H
+#ifndef ROCKET_NET_IO_THREAD_GROUP_H
+#define ROCKET_NET_IO_THREAD_GROUP_H
 
-// IO线程组（IO线程池）
 #include <vector>
 #include "rocket/common/log.h"
 #include "rocket/net/io_thread.h"
-#include <memory>
 
-namespace rocket
-{
-    class IOThreadGroup
-    {
 
-    public:
-    typedef std::shared_ptr<IOThreadGroup> s_ptr;
-        IOThreadGroup(int size);
-        ~IOThreadGroup();
 
-        void start();
-        void join();
-        IOThread *getIOThread(); // 从当前线程组获取一个可用的线程
+namespace rocket {
 
-    private:
-        int m_size;
-        std::vector<IOThread *> m_io_thread_groups;
+class IOThreadGroup {
 
-        // 用于轮询
-        int m_index{0};
-    };
+ public:
+  IOThreadGroup(int size);
 
-} // namespace rocket
+  ~IOThreadGroup();
+
+  void start();
+
+  void join();
+
+  IOThread* getIOThread();
+
+ private:
+
+  int m_size {0};
+  std::vector<IOThread*> m_io_thread_groups;
+
+  int m_index {0};
+
+};
+
+}
+
 
 #endif

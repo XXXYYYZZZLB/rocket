@@ -3,71 +3,66 @@
 
 #include <pthread.h>
 
-// 利用C++的RaII 构造和析构自动加锁
-namespace rocket
-{
-    template <class T>
-    class ScopeMutex
-    {
-    public:
-        ScopeMutex(T &mutex) : m_mutex(mutex)
-        {
-            mutex.lock();
-            m_is_lock = true;
-        }
 
-        ~ScopeMutex()
-        {
-            m_mutex.unlock();
-            m_is_lock = false;
-        }
+namespace rocket {
 
-        void lock()
-        {
-            if (!m_is_lock)
-            {
-                m_mutex.lock();
-            }
-        }
+template <class T>
+class ScopeMutex {
 
-        void unlock()
-        {
-            if (m_is_lock)
-            {
-                m_mutex.unlock();
-            }
-        }
+ public:
+  ScopeMutex(T& mutex) : m_mutex(mutex) {
+    m_mutex.lock();
+    m_is_lock = true;
+  }
 
-    private:
-        T &m_mutex;
-        bool m_is_lock {false};
-    };
+  ~ScopeMutex() {
+    m_mutex.unlock();
+    m_is_lock = false;
+  }
 
-    class Mutex
-    {
+  void lock() {
+    if (!m_is_lock) {
+      m_mutex.lock();
+    }
+  }
 
-    public:
-        Mutex()
-        {
-            pthread_mutex_init(&m_mutex, NULL);
-        }
-        ~Mutex()
-        {
-            pthread_mutex_destroy(&m_mutex);
-        }
-        void lock()
-        {
-            pthread_mutex_lock(&m_mutex);
-        }
-        
-        void unlock()
-        {
-            pthread_mutex_unlock(&m_mutex);
-        }
+  void unlock() {
+    if (m_is_lock) {
+      m_mutex.unlock();
+    }
+  }
 
-    private:
-        pthread_mutex_t m_mutex;
-    };
+ private:
+
+  T& m_mutex;
+
+  bool m_is_lock {false};
+
+};
+
+
+class Mutex {
+ public:
+  Mutex() {
+    pthread_mutex_init(&m_mutex, NULL);
+  }
+
+  ~Mutex() {
+    pthread_mutex_destroy(&m_mutex);
+  }
+
+  void lock() {
+    pthread_mutex_lock(&m_mutex);
+  }
+
+  void unlock() {
+    pthread_mutex_unlock(&m_mutex);
+  }
+
+ private:
+  pthread_mutex_t m_mutex;
+
+};
 
 }
 

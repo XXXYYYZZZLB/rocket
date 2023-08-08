@@ -6,38 +6,52 @@
 #include <string>
 #include <memory>
 
-namespace rocket
-{
-    class NetAddr // 基类
-    {
-    public:
-        typedef std::shared_ptr<NetAddr> s_ptr; // 为了多态的实现
-        virtual sockaddr *getSockAddr() = 0;    // 纯虚函数，让子类去实现
-        virtual socklen_t getSockLen() = 0;
-        virtual int getFamily() = 0;        // 协议族
-        virtual std::string toString() = 0; // 返回点分十进制
+namespace rocket {
 
-        virtual bool checkValid() = 0;
-    };
+class NetAddr {
+ public:
+  typedef std::shared_ptr<NetAddr> s_ptr;
 
-    class IPNetAddr : public NetAddr
-    {
-    public:
-        IPNetAddr(const std::string &ip, uint16_t port);
-        IPNetAddr(const std::string &addr); // 点分十进制
-        IPNetAddr(sockaddr_in addr);        // 点分十进制
+  virtual sockaddr* getSockAddr() = 0;
 
-        sockaddr *getSockAddr();
-        socklen_t getSockLen();
-        int getFamily();
-        std::string toString();
-        bool checkValid();
+  virtual socklen_t getSockLen() = 0;
 
-    private:
-        uint16_t m_port;
-        std::string m_ip{0};
-        sockaddr_in m_addr;
-    };
-} // namespace rocket
+  virtual int getFamily() = 0;
+
+  virtual std::string toString() = 0;
+
+  virtual bool checkValid() = 0;
+
+};
+
+
+class IPNetAddr : public NetAddr {
+ public:
+  
+  IPNetAddr(const std::string& ip, uint16_t port);
+  
+  IPNetAddr(const std::string& addr);
+
+  IPNetAddr(sockaddr_in addr);
+
+  sockaddr* getSockAddr();
+
+  socklen_t getSockLen();
+
+  int getFamily();
+
+  std::string toString();
+
+  bool checkValid();
+ 
+ private:
+  std::string m_ip;
+  uint16_t m_port {0};
+
+  sockaddr_in m_addr;
+
+};
+
+}
 
 #endif

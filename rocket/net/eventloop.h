@@ -5,57 +5,71 @@
 #include <set>
 #include <functional>
 #include <queue>
-
 #include "rocket/common/mutex.h"
 #include "rocket/net/fd_event.h"
 #include "rocket/net/wakeup_fd_event.h"
 #include "rocket/net/timer.h"
-#include "rocket/net/timer_event.h"
-#include <memory>
 
-namespace rocket
-{
-    class EventLoop
-    {
-    public:
-    typedef std::shared_ptr<EventLoop> s_ptr;
-        EventLoop();
-        ~EventLoop();
+namespace rocket {
+class EventLoop {
+ public:
+  EventLoop();
 
-        void loop(); // 核心函数
+  ~EventLoop();
 
-        void wakeup();
-        void stop();
+  void loop();
 
-        void addEpollEvent(FdEvent *event);
-        void deleteEpollEvent(FdEvent *event);
-        bool isInLoopThread();
-        void addTask(std::function<void()> cb, bool is_wake_up = false /*是否唤醒*/);
+  void wakeup();
 
-        /* 定时器 */
-        void addTimerEvent(TimerEvent::s_ptr event);
-        void initTimer();
+  void stop();
 
-    public:
-        static EventLoop* GetCurrentEventLoop();
+  void addEpollEvent(FdEvent* event);
 
-    private:
-        void dealWakeup();
-        void initWakeUpFdEvent();
+  void deleteEpollEvent(FdEvent* event);
 
-    private:
-        pid_t m_thread_id{0}; // 线程id
-        int m_epoll_fd{0};
-        int m_wakeup_fd{0};
-        WakeUpFdEvent *m_wakeup_fd_event{NULL};
-        bool m_stop_flag{false};
-        std::set<int> m_listen_fds;                        // 监听的套接字
-        std::queue<std::function<void()>> m_pending_tasks; // 所有待执行任务的队列
-        Mutex m_mutex;
+  bool isInLoopThread();
 
-        Timer *m_timer{NULL};
-    };
+  void addTask(std::function<void()> cb, bool is_wake_up = false);
+
+  void addTimerEvent(TimerEvent::s_ptr event);
+
+  bool isLooping();
+
+ public:
+  static EventLoop* GetCurrentEventLoop();
+
+
+ private:
+  void dealWakeup();
+
+  void initWakeUpFdEevent();
+
+  void initTimer();
+
+ private:
+  pid_t m_thread_id {0};
+
+  int m_epoll_fd {0};
+
+  int m_wakeup_fd {0};
+
+  WakeUpFdEvent* m_wakeup_fd_event {NULL};
+
+  bool m_stop_flag {false};
+
+  std::set<int> m_listen_fds;
+
+  std::queue<std::function<void()>> m_pending_tasks;
+  
+  Mutex m_mutex;
+
+  Timer* m_timer {NULL};
+
+  bool m_is_looping {false};
+
+};
 
 }
+
 
 #endif

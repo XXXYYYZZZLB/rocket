@@ -1,34 +1,39 @@
 #ifndef ROCKET_NET_IO_THREAD_H
 #define ROCKET_NET_IO_THREAD_H
 
-#include "rocket/net/eventloop.h"
 #include <pthread.h>
-#include <semaphore.h> //用来做同步用
+#include <semaphore.h>
+#include "rocket/net/eventloop.h"
 
-namespace rocket
-{
-    class IOThread
-    {
-    public:
-        IOThread();
-        ~IOThread();
+namespace rocket {
 
-        EventLoop *getEventLoop();
-        void start();
-        void jion();
+class IOThread {
+ public:
+  IOThread();
+  
+  ~IOThread();
 
-    public:
-        // 线程执行的函数
-        static void *Main(void *arg); // 注意！必须是静态函数 静态函数用大写
+  EventLoop* getEventLoop();
 
-    private:
-        pid_t m_thread_id{-1};         // 线程号
-        pthread_t m_thread{0};        // 线程句柄
-        EventLoop *m_event_loop{NULL}; // 当前io线程的loop对象
+  void start();
 
-        sem_t m_init_semaphore; // 用来做同步用,完成线程前置部分
-        sem_t m_start_semaphore;
-    };
+  void join();
+
+ public:
+  static void* Main(void* arg);
+
+
+ private:
+  pid_t m_thread_id {-1};    // 线程号
+  pthread_t m_thread {0};   // 线程句柄
+
+  EventLoop* m_event_loop {NULL}; // 当前 io 线程的 loop 对象
+
+  sem_t m_init_semaphore;
+
+  sem_t m_start_semaphore;
+
+};
 
 }
 

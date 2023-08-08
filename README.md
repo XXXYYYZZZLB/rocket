@@ -26,7 +26,7 @@ tcpbuffer
         />回收调整<
 
         readIndex   writeIndex
-        |              |
+         |              |
         [b][c][f][g][t][ ][ ][ ][ ][ ][ ][ ][ ] 平移过去
 
 TcpAcceptor
@@ -38,9 +38,18 @@ TcpServer（主从Reactor）
 主线程作用：
     通过epoll监听listenfd的可读事件，当可读事件发生后，调用acept函数获取 client_fd,
     随机取出一个subReactor，将client_fd的读写事件注册到这个subReactor的epoll上即可
-    主线程只负责建立连接事件，不进行业务处理，也不关系已连接套接字的IO事件
+    主线程只负责建立连接事件，不进行业务处理，也不关心已连接套接字的IO事件
 subReactor:
     通常有多个，每个subReactor由一个线程来运行，其注册clientfd的读写事件，当发生IO后，需要进行业务处理
+
+TcpConnection
+
+read -> excute -> write -|
+ ^                       |
+ |-----------------------|
+ read:      读取客户端发来的数据，组装为RPC请求
+ excute：   将RPC请求作为入参，执行业务逻辑得到RPC响应
+ write：    将RPC响应发送给客户端
 
 
 
